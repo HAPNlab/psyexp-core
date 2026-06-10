@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      # The tested surface (manifest, recording, diagnostics, rundir) is
+      # PsychoPy-free, so we skip the heavy GL/PsychoPy stack and install the
+      # project without its runtime deps plus the dev tooling only.
+      - name: Install
+        run: |
+          uv venv --python ${{ matrix.python-version }}
+          uv pip install --no-deps -e .
+          uv pip install pytest ruff
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Test
+        run: uv run pytest

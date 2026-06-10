@@ -1,0 +1,56 @@
+name: release-check
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  # Tests must pass before we accept a release tag.
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Verify version bump and lockfile
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME#v}"
+          echo "Tag version:      $tag"
+
+          pyproject_version="$(uv version --short)"
+          echo "pyproject version: $pyproject_version"
+
+          # Project's own pinned version inside the lockfile.
+          lock_version="$(
+            awk '
+              /^name = "psyexp-core"$/ { found = 1; next }
+              found && /^version = / {
+                sub(/^version = "/, ""); sub(/"$/, ""); print; exit
+              }
+            ' uv.lock
+          )"
+          echo "uv.lock version:   $lock_version"
+
+          if [ "$pyproject_version" != "$tag" ]; then
+            echo "::error::pyproject.toml version ($pyproject_version) does not match tag ($tag). Bump the version before tagging."
+            exit 1
+          fi
+
+          if [ "$lock_version" != "$tag" ]; then
+            echo "::error::uv.lock version ($lock_version) does not match tag ($tag). Run 'uv lock' and commit the result."
+            exit 1
+          fi
+
+          # Ensure the lockfile is fully consistent with pyproject.toml
+          # (catches dependency drift as well as a stale self-version).
+          uv lock --check
+
+          echo "Version $tag is consistent across pyproject.toml and uv.lock."
