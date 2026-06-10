@@ -9,6 +9,11 @@ submodules directly to keep startup lean.
 """
 from __future__ import annotations
 
-__version__ = "0.1.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("psyexp-core")
+except PackageNotFoundError:  # running from a raw checkout without install
+    __version__ = "0.0.0+unknown"
 
 __all__ = ["__version__"]
