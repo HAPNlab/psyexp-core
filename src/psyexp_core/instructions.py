@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
-from psyexp_core.keyboard import clear_events, wait_for_keys
+from psyexp_core.keyboard import clear_events, get_keys
 
 if TYPE_CHECKING:
     from psychopy import visual
@@ -48,10 +48,13 @@ def page_through(
     clear_events(kb)
     page_idx = 0
     while True:
+        # Poll (rather than block on waitKeys) so the window keeps flipping each
+        # frame; on macOS a window that flips once and then blocks may never come
+        # to the foreground to receive keypresses.
         draw_page(pages[page_idx], page_idx == len(pages) - 1)
         win.flip()
 
-        pressed = wait_for_keys(kb, keys)
+        pressed = get_keys(kb, keys)
         if not pressed:
             continue
         key_name = pressed[0]

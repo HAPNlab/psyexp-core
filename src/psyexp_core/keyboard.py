@@ -25,7 +25,16 @@ def build_keyboard() -> Keyboard | None:
     if KEYBOARD_BACKEND == "ptb":
         from psychopy.hardware import keyboard
 
-        return keyboard.Keyboard()
+        kb = keyboard.Keyboard()
+        # PsychoPy ≥2024.1 defaults muteOutsidePsychopy=True on macOS, silently
+        # dropping keypresses when the PsychoPy window isn't the focused/registered
+        # app (common when launched from a terminal or IDE). Disable it so keys are
+        # accepted without first clicking the window to give it focus.
+        try:
+            kb.device.muteOutsidePsychopy = False
+        except AttributeError:
+            pass
+        return kb
     return None
 
 
