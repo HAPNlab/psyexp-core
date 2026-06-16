@@ -40,3 +40,20 @@ psyexp-core = { git = "ssh://git@github.com/<you>/psyexp-core.git", tag = "v0.1.
 
 `write_manifest` records the resolved `psyexp_core_version` so each run is
 traceable back to a core version.
+
+### Co-developing core while a task repo keeps the git pin
+
+Lab task repos (e.g. `heat-task`) commit the **git-tag** source above so clones
+reproduce exactly, then overlay a local editable install for development:
+
+```bash
+uv pip install -e ../psyexp-core
+```
+
+**Gotcha:** `uv run` re-syncs the task venv from its `uv.lock` on every launch,
+which reverts that editable install straight back to the pinned tag (symptoms:
+your local core edits silently don't take effect). Set `UV_NO_SYNC=1` in the task
+repo (export it in your shell, or use `uv run --no-sync`) so the editable overlay
+sticks; run a manual `uv sync` only when you change other deps, then re-run the
+editable install. See heat-task's README ("Co-developing `psyexp-core` locally")
+for the full workflow.
