@@ -19,6 +19,31 @@ if TYPE_CHECKING:
 
 def configure_psychopy_backend() -> None:
     prefs.hardware["keyboardBackend"] = KEYBOARD_BACKEND
+    if KEYBOARD_BACKEND != "ptb":
+        warn_degraded_backend()
+
+
+def warn_degraded_backend() -> None:
+    """Loudly flag, at startup, that psychtoolbox is missing and the keyboard has
+    fallen back to PsychoPy's ``event`` backend — which only captures keys while the
+    PsychoPy window holds OS focus. Without this, the experimenter doesn't discover
+    that keypresses (e.g. the start key) silently aren't registering until mid-run."""
+    from rich.console import Console
+    from rich.panel import Panel
+
+    Console(stderr=True).print(
+        Panel(
+            "[bold]psychtoolbox is not installed[/bold] — the keyboard is using "
+            "PsychoPy's\n[bold]event[/bold] backend, which only captures keypresses "
+            "while the PsychoPy\nwindow has OS focus. If keys don't register "
+            "mid-run, click the window\nfirst — or install psychtoolbox for the "
+            "robust PTB backend.",
+            title="[bold red]Keyboard: degraded backend[/bold red]",
+            border_style="red",
+            expand=False,
+            padding=(1, 2),
+        )
+    )
 
 
 def build_keyboard() -> Keyboard | None:
