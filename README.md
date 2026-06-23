@@ -57,3 +57,18 @@ repo (export it in your shell, or use `uv run --no-sync`) so the editable overla
 sticks; run a manual `uv sync` only when you change other deps, then re-run the
 editable install. See heat-task's README ("Co-developing `psyexp-core` locally")
 for the full workflow.
+
+## Releasing
+
+Tagging and publishing are deliberately separate, so tags stay cheap to iterate on:
+
+1. **Bump + lock + changelog**, then tag `vX.Y.Z`. The tag runs the checks and
+   creates a **draft** GitHub Release — it does **not** publish anything.
+2. **Review the draft** Release and publish it. That triggers
+   [`publish.yml`](.github/workflows/publish.yml), which uploads to
+   [PyPI](https://pypi.org/project/psyexp-core/) via **Trusted Publishing** (OIDC;
+   no API token stored).
+
+PyPI versions are immutable, so retagging never republishes; bump the version to
+ship new code. See **[docs/releasing.md](docs/releasing.md)** for the full process,
+SemVer policy, pre-releases, retag semantics, and the one-time PyPI setup.

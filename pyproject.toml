@@ -9,6 +9,7 @@ description = "Task-agnostic harness for PsychoPy experiments: screen/frame-timi
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "Eric Wang" }]
+urls = { Homepage = "https://github.com/HAPNlab/psyexp-core", Repository = "https://github.com/HAPNlab/psyexp-core" }
 dependencies = [
     "psychopy>=2025.1",
     "rich>=14.3.3",
