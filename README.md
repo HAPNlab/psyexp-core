@@ -57,3 +57,37 @@ repo (export it in your shell, or use `uv run --no-sync`) so the editable overla
 sticks; run a manual `uv sync` only when you change other deps, then re-run the
 editable install. See heat-task's README ("Co-developing `psyexp-core` locally")
 for the full workflow.
+
+## Releasing
+
+Tagging and publishing are deliberately separate, so tags stay cheap to iterate on:
+
+1. **Bump + lock.** Update `version` in `pyproject.toml`, run `uv lock`, commit, and
+   merge to `main`.
+2. **Tag.** `git tag vX.Y.Z && git push origin vX.Y.Z`. This runs `release-check.yml`
+   — the test matrix plus a guard that the tag, `pyproject.toml`, and `uv.lock`
+   versions all agree. **Tagging does not publish anything.** Tags can be moved or
+   deleted freely while iterating.
+3. **Publish.** Create a GitHub Release for the tag. That — and only that — triggers
+   `publish.yml`, which re-runs the tests, builds the sdist/wheel, and uploads to
+   [PyPI](https://pypi.org/project/psyexp-core/) via **Trusted Publishing** (OIDC;
+   no API token is stored).
+
+### Retag / re-release semantics
+
+PyPI versions are **immutable**: once `X.Y.Z` is published, that number is burned —
+you can yank it, but never re-upload it, even to a different commit. So:
+
+- **Moving/deleting a tag** before you've published a Release for it: totally fine —
+  nothing was sent to PyPI.
+- **Re-publishing the same version** (e.g. delete the Release and re-create it):
+  PyPI rejects the duplicate; `skip-existing: true` makes the job skip rather than
+  fail, but the old artifact stays. To ship new code you must bump the version.
+- For throwaway iteration, use a **pre-release** version (`X.Y.ZrcN` / `X.Y.Z.devN`)
+  — each is a distinct, disposable version on PyPI.
+
+### One-time Trusted Publishing setup
+
+On PyPI → the project's *Publishing* settings (or Account → Publishing for the very
+first upload), add a GitHub trusted publisher: owner `HAPNlab`, repository
+`psyexp-core`, workflow `publish.yml`, environment `pypi`.
