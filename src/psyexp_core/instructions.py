@@ -7,13 +7,15 @@ and the flip + key polling, reusing the shared keyboard abstraction.
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from psyexp_core.keyboard import clear_events, get_keys
 
 if TYPE_CHECKING:
     from psychopy import visual
     from psychopy.hardware.keyboard import Keyboard
+
+_Page = TypeVar("_Page")
 
 
 def _default_quit() -> None:
@@ -24,8 +26,8 @@ def _default_quit() -> None:
 
 def page_through(
     win: visual.Window,
-    pages: Sequence[object],
-    draw_page: Callable[[object, bool], None],
+    pages: Sequence[_Page],
+    draw_page: Callable[[_Page, bool], None],
     *,
     forward_keys: Sequence[str],
     back_keys: Sequence[str] = (),
