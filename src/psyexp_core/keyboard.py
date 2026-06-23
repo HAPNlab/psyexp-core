@@ -40,9 +40,15 @@ def warn_degraded_backend() -> None:
         Panel(
             "[bold]psychtoolbox is not installed[/bold] — the keyboard is using "
             "PsychoPy's\n[bold]event[/bold] backend, which only captures keypresses "
-            "while the PsychoPy\nwindow has OS focus. If keys don't register "
-            "mid-run, click the window\nfirst — or install psychtoolbox for the "
-            "robust PTB backend.",
+            "while the PsychoPy\nwindow has OS focus.\n\n"
+            "[bold yellow]Keypresses made outside the PsychoPy window are NOT "
+            "captured.[/bold yellow]\nIf you click away (to a terminal, the thermode "
+            "UI, another app…) the\nwindow loses focus and keys — including the start "
+            "and quit keys — are\nsilently dropped until you click the PsychoPy window "
+            "again.\n\n"
+            "Keep the PsychoPy window focused throughout the run, or install\n"
+            "psychtoolbox for the robust PTB backend (which captures keys\n"
+            "regardless of which window has focus).",
             title="[bold red]Keyboard: degraded backend[/bold red]",
             border_style="red",
             expand=False,
