@@ -1580,7 +1580,7 @@ wheels = [
 
 [[package]]
 name = "psyexp-core"
-version = "0.5.2"
+version = "0.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "prompt-toolkit" },
