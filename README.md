@@ -1,5 +1,8 @@
 # psyexp-core
 
+[![PyPI](https://img.shields.io/pypi/v/psyexp-core.svg)](https://pypi.org/project/psyexp-core/)
+[![Python](https://img.shields.io/pypi/pyversions/psyexp-core.svg)](https://pypi.org/project/psyexp-core/)
+
 Task-agnostic harness for PsychoPy experiments, shared across the lab's task
 repos (`heat-task`, `mid-task`, `mid-task-deterministic`). It owns the *plumbing*
 that every task duplicates; each task repo keeps only its own stimuli, trial
@@ -18,10 +21,28 @@ logic, and record schemas.
 | `instructions` | `page_through(...)` — a self-paced, keypress-driven instruction pager. |
 | `keyboard` | PTB / PsychoPy-event keyboard abstraction: `build_keyboard` / `get_keys` / `wait_for_keys` / `clear_events`, plus the timed-press API for response windows — `get_presses` (name + rt), `reset_clock_on_flip` / `reset_clock` / `clock_time`. |
 
+## Install
+
+`psyexp-core` is published on [PyPI](https://pypi.org/project/psyexp-core/), so
+the released harness installs like any other dependency:
+
+```bash
+uv add psyexp-core          # or: pip install psyexp-core
+```
+
+```toml
+# your-task/pyproject.toml
+dependencies = ["psyexp-core>=0.5"]
+```
+
+Requires Python 3.11+. On macOS the `pyobjc-framework-quartz` dependency is
+pulled in automatically for display diagnostics.
+
 ## Use from a task repo
 
-Add it as a dependency. For day-to-day development, point at a local checkout so
-edits are live without reinstalling:
+You can keep the plain PyPI dependency above, or override the source while
+developing. For day-to-day work, point at a local checkout so edits are live
+without reinstalling:
 
 ```toml
 # your-task/pyproject.toml
@@ -31,11 +52,12 @@ dependencies = ["psyexp-core"]
 psyexp-core = { path = "../psyexp-core", editable = true }
 ```
 
-For a reproducible release build, pin a tagged ref instead:
+For a reproducible build pinned ahead of (or instead of) a PyPI release, pin a
+tagged git ref instead:
 
 ```toml
 [tool.uv.sources]
-psyexp-core = { git = "ssh://git@github.com/<you>/psyexp-core.git", tag = "v0.1.0" }
+psyexp-core = { git = "ssh://git@github.com/HAPNlab/psyexp-core.git", tag = "v0.5.1" }
 ```
 
 `write_manifest` records the resolved `psyexp_core_version` so each run is
