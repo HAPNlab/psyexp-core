@@ -13,7 +13,8 @@ release:
 	@test -z "$$(git status --porcelain)" || { echo "working tree is dirty; commit or stash first"; exit 1; }
 	@git rev-parse -q --verify "refs/tags/v$(TO)" >/dev/null && { echo "tag v$(TO) already exists"; exit 1; } || true
 	sed -i '' 's/^version = ".*"/version = "$(TO)"/' pyproject.toml
-	git add pyproject.toml
+	uv lock
+	git add pyproject.toml uv.lock
 	git commit -m "chore: release v$(TO)"
 	git tag -a "v$(TO)" -m "v$(TO)"
 	@echo "tagged v$(TO) — run 'git push && git push --tags' to publish"
