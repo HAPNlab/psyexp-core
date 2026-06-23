@@ -9,7 +9,7 @@ name: publish
 #
 # Auth uses PyPI Trusted Publishing (OIDC) — no API token is stored as a secret.
 # The `pypi` environment scopes the OIDC trust and gates publishes behind a
-# required-reviewer approval. One-time setup: see docs/ci-pypi-setup.md.
+# required-reviewer approval. One-time setup: see docs/ci-setup.md.
 on:
   release:
     types: [published]

@@ -106,4 +106,4 @@ No API token is stored: the publish job authenticates via OIDC, scoped to the
 `pypi` GitHub Environment (which also gates publishes behind a required-reviewer
 approval). The full one-time setup — creating the environment + gate and
 registering the trusted publisher on PyPI — is in
-**[ci-pypi-setup.md](ci-pypi-setup.md)**.
+**[ci-setup.md](ci-setup.md)**.
