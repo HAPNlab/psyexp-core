@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "psyexp-core"
-version = "0.4.0"
+version = "0.5.0"
 description = "Task-agnostic harness for PsychoPy experiments: screen/frame-timing setup, run manifests, CSV writers, setup-wizard primitives, instruction pager, and keyboard abstraction."
 readme = "README.md"
 requires-python = ">=3.11"

@@ -16,7 +16,7 @@ logic, and record schemas.
 | `recording` | `CsvWriter` base class (maps a dataclass record onto a fixed column schema). |
 | `wizard` | questionary / prompt_toolkit setup-wizard primitives: shared styles, `ask_text` / `ask_select` / `ask_confirm`, `PosFloatValidator`, `prompt_unique_name`, `quit_app`. |
 | `instructions` | `page_through(...)` — a self-paced, keypress-driven instruction pager. |
-| `keyboard` | PTB / PsychoPy-event keyboard abstraction. |
+| `keyboard` | PTB / PsychoPy-event keyboard abstraction: `build_keyboard` / `get_keys` / `wait_for_keys` / `clear_events`, plus the timed-press API for response windows — `get_presses` (name + rt), `reset_clock_on_flip` / `reset_clock` / `clock_time`. |
 
 ## Use from a task repo
 
