@@ -12,13 +12,17 @@ except ImportError:
 else:
     KEYBOARD_BACKEND = "ptb"
 
-from psychopy import event, prefs
+# PsychoPy is imported lazily inside the functions that need it so this module —
+# and the PsychoPy-free timed-press / clock helpers below — stay importable (and
+# unit-testable) in headless/CI environments without the PsychoPy stack.
 
 if TYPE_CHECKING:
     from psychopy.hardware.keyboard import Keyboard
 
 
 def configure_psychopy_backend() -> None:
+    from psychopy import prefs
+
     prefs.hardware["keyboardBackend"] = KEYBOARD_BACKEND
     if KEYBOARD_BACKEND != "ptb":
         warn_degraded_backend()
@@ -69,6 +73,8 @@ def clear_events(kb: Keyboard | None) -> None:
         if kb is not None:
             kb.clearEvents()
         return
+    from psychopy import event
+
     event.clearEvents(eventType="keyboard")
 
 
@@ -77,6 +83,8 @@ def wait_for_keys(kb: Keyboard | None, key_list: list[str]) -> list[str]:
         if kb is None:
             return []
         return [key_press.name for key_press in kb.waitKeys(keyList=key_list, waitRelease=False)]
+    from psychopy import event
+
     pressed = event.waitKeys(keyList=key_list)
     return [str(key_name) for key_name in (pressed or [])]
 
@@ -86,6 +94,8 @@ def get_keys(kb: Keyboard | None, key_list: list[str]) -> list[str]:
         if kb is None:
             return []
         return [key_press.name for key_press in kb.getKeys(keyList=key_list, waitRelease=False)]
+    from psychopy import event
+
     return [str(key_name) for key_name in event.getKeys(keyList=key_list)]
 
 
