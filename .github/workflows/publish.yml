@@ -3,9 +3,9 @@ name: publish
 # Publishes psyexp-core to PyPI when a GitHub Release is published.
 #
 # Publishing is deliberately tied to the *Release* event, NOT to pushing a tag.
-# Tags only run release-check.yml (tests + version/lock consistency), so tags can
-# be created, moved, or deleted freely while iterating without ever touching
-# PyPI. A version is shipped only when you intentionally publish a Release for it.
+# A tag only runs release-check.yml (tests + version/changelog/lock checks, then a
+# DRAFT Release), so tags can be created, moved, or deleted freely while iterating
+# without ever touching PyPI. A version ships only when a human publishes the draft.
 #
 # Auth uses PyPI Trusted Publishing (OIDC) — no API token is stored as a secret.
 # One-time setup on PyPI (Account → Publishing, or the project's settings):
