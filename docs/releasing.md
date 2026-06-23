@@ -102,11 +102,8 @@ Because publishing is tied to the **Release**, not the tag, tags stay cheap:
 
 ## One-time PyPI setup (Trusted Publishing)
 
-No API token is stored. On PyPI, add a GitHub trusted publisher for the project:
-
-- **Owner:** `HAPNlab`  **Repository:** `psyexp-core`
-- **Workflow:** `publish.yml`  **Environment:** `pypi`
-
-For the very first upload (before the project exists on PyPI), use the
-[pending publisher](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
-flow under Account → Publishing.
+No API token is stored: the publish job authenticates via OIDC, scoped to the
+`pypi` GitHub Environment (which also gates publishes behind a required-reviewer
+approval). The full one-time setup — creating the environment + gate and
+registering the trusted publisher on PyPI — is in
+**[ci-pypi-setup.md](ci-pypi-setup.md)**.

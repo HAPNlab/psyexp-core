@@ -8,9 +8,8 @@ name: publish
 # without ever touching PyPI. A version ships only when a human publishes the draft.
 #
 # Auth uses PyPI Trusted Publishing (OIDC) — no API token is stored as a secret.
-# One-time setup on PyPI (Account → Publishing, or the project's settings):
-#   Owner: HAPNlab   Repository: psyexp-core
-#   Workflow: publish.yml   Environment: pypi
+# The `pypi` environment scopes the OIDC trust and gates publishes behind a
+# required-reviewer approval. One-time setup: see docs/ci-pypi-setup.md.
 on:
   release:
     types: [published]
