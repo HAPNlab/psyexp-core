@@ -32,7 +32,12 @@ QSTYLE = questionary.Style(
         ("answer", "fg:#ff9d00 bold"),
         ("pointer", "fg:#ff9d00 bold"),
         ("highlighted", "fg:#ff9d00 bold"),
-        ("selected", "fg:#cc5454"),
+        # prompt_toolkit's base UI style sets ("selected", "reverse"), which paints
+        # a pre-selected default (e.g. the last-used screen) as an inverted bar.
+        # Cancel the reverse so the default reads as plain text — it's marked by
+        # the cursor and a "(last used)" suffix, not by colour. "" would NOT undo
+        # the inherited reverse; "noreverse" explicitly does.
+        ("selected", "noreverse"),
         ("separator", "fg:#6c6c6c"),
         ("instruction", "fg:#858585 italic"),
         ("placeholder", "fg:#6c6c6c"),
@@ -84,8 +89,15 @@ def ask_text(
     return answer
 
 
-def ask_select(message: str, choices: Sequence[questionary.Choice | str]):
-    answer = questionary.select(message, choices=list(choices), style=QSTYLE).ask()
+def ask_select(
+    message: str,
+    choices: Sequence[questionary.Choice | str],
+    *,
+    default: questionary.Choice | str | None = None,
+):
+    answer = questionary.select(
+        message, choices=list(choices), default=default, style=QSTYLE
+    ).ask()
     if answer is None:
         quit_app()
     return answer

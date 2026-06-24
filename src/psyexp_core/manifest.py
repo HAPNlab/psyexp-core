@@ -138,6 +138,8 @@ def write_manifest(
             display["frame_dur_ms"] = round(frame_dur_s * 1000, 4)
         if frame_dur_source is not None:
             display["frame_dur_source"] = frame_dur_source
+        if screen_diag.monitor is not None:
+            display["monitor"] = screen_diag.monitor
         manifest["display"] = display
 
     process: dict[str, Any] = {"argv": sys.argv}

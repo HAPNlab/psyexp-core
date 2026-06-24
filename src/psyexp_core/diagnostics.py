@@ -5,7 +5,8 @@ stack. ``screen.setup_screen`` populates it; ``manifest.write_manifest`` reads i
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -19,3 +20,7 @@ class ScreenDiagnostics:
     calib_p99_ms: float
     calib_max_ms: float
     calib_n: int
+    # OS-level detail for the display the task actually opened on (name, refresh
+    # rate, physical size, HiDPI scale, …), as serialized by screen.query_monitors.
+    # Kept as a plain dict so this module stays free of the pyglet/GL stack.
+    monitor: dict[str, Any] | None = field(default=None)

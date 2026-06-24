@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 See [docs/releasing.md](docs/releasing.md) for the release process.
 
+## v0.6.0
+
+### Added
+
+- `screen.list_screens()` and `screen.ScreenInfo` enumerate the connected
+  displays (index, resolution, virtual-desktop position).
+- `screen.prompt_screen(default=…)` asks the operator which display to run on,
+  pre-selecting the last-used (or last-connected) screen and skipping the prompt
+  when only one display is attached. A remembered screen is marked with a
+  `(last used)` text suffix rather than a colour.
+- `setup_screen(screen=…)` opens the window on a chosen display index instead of
+  always the last one; `None` or a stale index still falls back to the last
+  display, so existing callers are unaffected.
+- `wizard.ask_select(default=…)` to pre-select an option.
+- `screen.query_monitors()` and `screen.MonitorInfo` report per-display detail
+  beyond resolution — name, refresh rate, color depth, HiDPI scale factor,
+  physical size (with `diagonal_in`/`ppi` helpers), and the primary flag —
+  enriched from Quartz on macOS and Win32/GDI on Windows. Fields the OS doesn't
+  report are left `None`; unsupported platforms fall back to pyglet geometry.
+
+### Changed
+
+- A pre-selected default in a `select` prompt (e.g. the last-used screen) no
+  longer renders as a coloured/inverted bar. The shared palette now sets
+  `("selected", "noreverse")`, cancelling the `reverse` that prompt_toolkit's
+  base UI style applies, so the default reads as plain text — distinguished by
+  the cursor and a `(last used)` suffix instead.
+
 ## v0.5.2
 
 ### Changed
