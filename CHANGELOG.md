@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 See [docs/releasing.md](docs/releasing.md) for the release process.
 
+## v0.7.0
+
+### Changed
+
+- The manifest's `display.vsync_calibration.p99_ms` is now computed with
+  `numpy.percentile` (linear interpolation) instead of a hand-rolled nearest-rank
+  index. The recorded value shifts slightly versus prior runs; it's a diagnostic
+  field and the interpolated result is the more standard percentile.
+- `system.processor` (the friendly CPU name) is now resolved cross-platform via
+  [py-cpuinfo](https://pypi.org/project/py-cpuinfo/)'s `brand_raw`, replacing the
+  Windows-only registry (`winreg`) lookup. macOS now reports a marketing name
+  instead of the bare arch.
+- The manifest's structured blocks (`system`, `display`, `vsync_calibration`) are
+  modelled as Pydantic v2 models and serialized with `model_dump(exclude_none=True)`,
+  replacing the manual `None`-pruning in `write_manifest`. Output is otherwise
+  unchanged.
+
+### Dependencies
+
+- Declared `numpy`, `py-cpuinfo`, and `pydantic>=2` directly (previously relied on
+  transitively or not at all).
+
 ## v0.6.0
 
 ### Added

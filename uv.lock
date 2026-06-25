@@ -881,11 +881,14 @@ wheels = [
 
 [[package]]
 name = "psyexp-core"
-version = "0.6.0"
+version = "0.7.0"
 source = { editable = "." }
 dependencies = [
+    { name = "numpy" },
     { name = "prompt-toolkit" },
     { name = "psychopy" },
+    { name = "py-cpuinfo" },
+    { name = "pydantic" },
     { name = "pyglet", version = "1.4.11", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'win32'" },
     { name = "pyglet", version = "1.5.27", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'win32'" },
     { name = "pyobjc-framework-quartz", marker = "sys_platform == 'darwin'" },
@@ -907,8 +910,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "numpy" },
     { name = "prompt-toolkit", specifier = ">=3.0" },
     { name = "psychopy", specifier = ">=2025.1" },
+    { name = "py-cpuinfo" },
+    { name = "pydantic", specifier = ">=2" },
     { name = "pyglet", specifier = ">=1.4" },
     { name = "pyobjc-framework-quartz", marker = "sys_platform == 'darwin'", specifier = ">=10" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
