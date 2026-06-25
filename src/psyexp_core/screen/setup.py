@@ -6,8 +6,8 @@ the window alongside a :class:`ScreenDiagnostics` snapshot for the manifest.
 from __future__ import annotations
 
 import platform
-import statistics
 
+import numpy as np
 import pyglet
 from psychopy import core, monitors, visual
 
@@ -90,10 +90,10 @@ def setup_screen(
         now = core.getTime()
         intervals_ms.append((now - last_t) * 1000)
         last_t = now
-    intervals_ms.sort()
-    median = statistics.median(intervals_ms)
-    p99 = intervals_ms[int(0.99 * len(intervals_ms)) - 1]
-    mx = intervals_ms[-1]
+    arr = np.asarray(intervals_ms)
+    median = float(np.median(arr))
+    p99 = float(np.percentile(arr, 99))
+    mx = float(arr.max())
 
     # Enable PsychoPy's frame interval recording so callers can read
     # win.nDroppedFrames and isolate on-screen drops from measurement artifacts.
