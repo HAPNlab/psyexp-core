@@ -1,4 +1,4 @@
-.PHONY: release bump-patch bump-minor bump-major version
+.PHONY: release bump-patch bump-minor bump-major version delete-tag
 
 # Current version, read straight from pyproject.toml.
 VERSION := $(shell grep -m1 '^version = ' pyproject.toml | cut -d'"' -f2)
@@ -10,14 +10,36 @@ version:
 # Usage: make release TO=0.4.0
 release:
 	@test -n "$(TO)" || { echo "usage: make release TO=X.Y.Z"; exit 1; }
+	@echo "$(TO)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "invalid version '$(TO)' (expected X.Y.Z, with no leading 'v')"; exit 1; }
 	@test -z "$$(git status --porcelain)" || { echo "working tree is dirty; commit or stash first"; exit 1; }
 	@git rev-parse -q --verify "refs/tags/v$(TO)" >/dev/null && { echo "tag v$(TO) already exists"; exit 1; } || true
+	@if [ -z "$(YES)" ]; then \
+		printf "release v$(TO) (current: v$(VERSION))? [y/N] "; \
+		read ans; \
+		case "$$ans" in [yY]|[yY][eE][sS]) ;; *) echo "aborted"; exit 1;; esac; \
+	fi
 	sed -i '' 's/^version = ".*"/version = "$(TO)"/' pyproject.toml
 	uv lock
 	git add pyproject.toml uv.lock
 	git commit -m "chore: release v$(TO)"
 	git tag -a "v$(TO)" -m "v$(TO)"
-	@echo "tagged v$(TO) — run 'git push && git push --tags' to publish"
+	@echo "tagged v$(TO) — run 'git push --follow-tags' to publish"
+
+# Delete a tag locally (and on origin if it exists there).
+# Usage: make delete-tag TAG=v0.4.0
+delete-tag:
+	@test -n "$(TAG)" || { echo "usage: make delete-tag TAG=vX.Y.Z"; exit 1; }
+	@git rev-parse -q --verify "refs/tags/$(TAG)" >/dev/null || { echo "tag $(TAG) does not exist locally"; exit 1; }
+	@if command -v gh >/dev/null 2>&1 && gh release view "$(TAG)" >/dev/null 2>&1; then \
+		echo "a GitHub release points to $(TAG); delete it first with 'gh release delete $(TAG)'"; exit 1; \
+	fi
+	@if [ -z "$(YES)" ]; then \
+		printf "delete tag $(TAG) locally and on origin? [y/N] "; \
+		read ans; \
+		case "$$ans" in [yY]|[yY][eE][sS]) ;; *) echo "aborted"; exit 1;; esac; \
+	fi
+	git tag -d "$(TAG)"
+	@git push origin ":refs/tags/$(TAG)" 2>/dev/null || echo "(tag not on origin, or push skipped)"
 
 # Convenience wrappers that compute the next version from the current one.
 bump-patch:
