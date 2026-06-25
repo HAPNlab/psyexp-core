@@ -25,6 +25,9 @@ def platform_monitor_details() -> list[dict]:
 def _macos_monitor_details() -> list[dict]:
     """Display detail via Quartz/CoreGraphics + AppKit (names)."""
     import Quartz
+
+    # PyObjC populates AppKit dynamically, so static analyzers can't see NSScreen.
+    # noinspection PyUnresolvedReferences
     from AppKit import NSScreen
 
     # Map CoreGraphics display id -> human-readable name (NSScreen, macOS 10.15+).
