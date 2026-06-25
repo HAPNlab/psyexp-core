@@ -21,6 +21,7 @@ class _FakeScreenDiag:
     calib_p99_ms: float = 17.0
     calib_max_ms: float = 18.0
     calib_n: int = 120
+    monitor: dict | None = None
 
 
 def test_system_info_keys():
