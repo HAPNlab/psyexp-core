@@ -1,8 +1,8 @@
 # Setting up PyPI CI (one-time)
 
-This is the **one-time** setup that lets [`publish.yml`](../.github/workflows/publish.yml)
-upload `psyexp-core` to PyPI. For the day-to-day release process (bump, tag,
-publish the draft), see [releasing.md](releasing.md).
+This is the **one-time** setup that lets [`release.yml`](../.github/workflows/release.yml)
+upload `psyexp-core` to PyPI. For the day-to-day release process (bump, tag, approve
+the PyPI step), see [releasing.md](releasing.md).
 
 ## How auth works: Trusted Publishing (OIDC), no stored token
 
@@ -19,10 +19,10 @@ Why this is the safest option:
   environment can mint it — not test/PR/push workflows.
 - The `pypi` environment adds a **manual approval gate** before the job runs.
 
-The publish job already declares this (no edits needed):
+The `pypi` job already declares this (no edits needed):
 
 ```yaml
-# .github/workflows/publish.yml
+# .github/workflows/release.yml
 permissions:
   id-token: write          # mint the OIDC token
 environment:
@@ -66,7 +66,7 @@ Use a **pending publisher** — it creates the project on first successful uploa
    - **PyPI Project Name:** `psyexp-core`
    - **Owner:** `HAPNlab`
    - **Repository name:** `psyexp-core`
-   - **Workflow name:** `publish.yml`
+   - **Workflow name:** `release.yml`
    - **Environment name:** `pypi`
 3. Save.
 
@@ -75,16 +75,16 @@ Use a **pending publisher** — it creates the project on first successful uploa
 Project page → **Manage → Publishing → Add a new publisher**, with the same
 owner / repo / workflow / environment values above.
 
-> The **Environment name must be exactly `pypi`** — it has to match the
-> `environment: name:` in `publish.yml`, or PyPI will reject the OIDC token.
+> The **Environment name must be exactly `pypi`** and the **Workflow name exactly
+> `release.yml`** — both have to match `release.yml`, or PyPI will reject the OIDC
+> token with `invalid-publisher`.
 
 ## Step 3 — Do a release
 
 Follow [releasing.md](releasing.md): bump the version + `CHANGELOG.md`, `uv lock`,
-tag `vX.Y.Z`. The tag drafts a GitHub Release; **publish the draft**. That triggers
-`publish.yml`, which will:
+tag `vX.Y.Z`. The tag runs `release.yml`, which will:
 
-1. run the test matrix and build the sdist/wheel, then
+1. run the test matrix, publish the GitHub Release, and build the sdist/wheel, then
 2. pause on the `pypi` environment for your **approval**, then
 3. upload to PyPI via OIDC.
 
@@ -94,7 +94,7 @@ Approve it from the **Actions** run page (or the repo's **Environments** view).
 
 | Symptom | Cause / fix |
 |---|---|
-| `invalid-publisher` / OIDC rejected | The PyPI trusted publisher's owner/repo/workflow/**environment** don't all match. Re-check Step 2 — `pypi` and `publish.yml` are the usual culprits. |
+| `invalid-publisher` / OIDC rejected | The PyPI trusted publisher's owner/repo/workflow/**environment** don't all match. Re-check Step 2 — `pypi` and `release.yml` are the usual culprits. |
 | Job runs but never uploads / waits forever | It's parked on the environment approval gate. Approve it on the run page. |
 | `File already exists` | That version is already on PyPI (versions are immutable). `skip-existing: true` turns this into a skip; bump the version to ship new code. See [releasing.md](releasing.md#retag--re-release-semantics). |
-| `id-token` permission error | The job needs `permissions: id-token: write` (already set in `publish.yml`). |
+| `id-token` permission error | The job needs `permissions: id-token: write` (already set on the `pypi` job in `release.yml`). |

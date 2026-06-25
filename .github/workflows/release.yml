@@ -1,10 +1,16 @@
 name: release-check
 
 # On a version tag: run the test matrix, verify the version/changelog/lock all
-# agree, and create a PUBLISHED GitHub Release with notes from CHANGELOG.md.
-# Publishing the Release triggers publish.yml, but that workflow's PyPI step is
-# gated behind the `pypi` environment's required-reviewer approval — so a tag
-# still cannot reach PyPI without one human approval. See docs/releasing.md.
+# agree, create a PUBLISHED GitHub Release with notes from CHANGELOG.md, then
+# build and upload to PyPI. The PyPI step runs in the `pypi` environment and is
+# gated behind its required-reviewer approval — so a tag still cannot reach PyPI
+# without one human approval. See docs/releasing.md.
+#
+# Build + PyPI live here (not in a separate publish.yml triggered by the Release
+# event) on purpose: a Release created by the workflow's GITHUB_TOKEN does NOT
+# trigger other workflows (GitHub's anti-recursion rule), so a release-event
+# chain would never fire. Keeping everything in this tag-triggered run avoids
+# that entirely while the environment approval still gates the upload.
 on:
   push:
     tags:
@@ -71,8 +77,8 @@ jobs:
           echo "Version $tag is consistent across pyproject.toml, uv.lock, and CHANGELOG.md."
 
   # After the gates pass, publish a GitHub Release with notes from CHANGELOG.md.
-  # This triggers publish.yml, whose PyPI step still waits on the `pypi`
-  # environment's required-reviewer approval before anything reaches PyPI.
+  # The build + pypi jobs below then ship it; the PyPI upload still waits on the
+  # `pypi` environment's required-reviewer approval before anything reaches PyPI.
   publish-release:
     needs: [tests, version-check]
     runs-on: ubuntu-latest
@@ -112,3 +118,58 @@ jobs:
           draft: false
           # Mark as prerelease when the tag carries an rc/alpha/beta suffix.
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
+
+  build:
+    needs: publish-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      # Never ship a wheel whose version disagrees with the release tag.
+      - name: Verify release tag matches pyproject version
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(uv version --short)"
+          echo "Release tag: $tag   pyproject version: $version"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Release tag ($tag) does not match pyproject version ($version)."
+            exit 1
+          fi
+
+      - name: Build sdist + wheel
+        run: uv build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  # Authenticates via PyPI Trusted Publishing (OIDC) — no stored token. The
+  # `pypi` environment scopes the OIDC trust and gates the upload behind a
+  # required-reviewer approval, so a version ships only after a human approves.
+  # One-time setup (incl. the PyPI publisher's Workflow name = release.yml):
+  # see docs/ci-setup.md.
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/psyexp-core/
+    permissions:
+      id-token: write   # mint the OIDC token for Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Tolerate re-running a release whose version is already on PyPI
+          # (PyPI versions are immutable): skip instead of hard-failing.
+          skip-existing: true

@@ -80,14 +80,14 @@ For throwaway iteration you can instead publish PyPI pre-release versions
    The [release workflow](../.github/workflows/release.yml) runs the tests, checks
    the version/changelog/lock agree, and **publishes** a GitHub Release with
    notes from `CHANGELOG.md` (marked pre-release for `-alpha`/`-beta`/`-rc` tags).
-7. Publishing the Release triggers [publish.yml](../.github/workflows/publish.yml),
-   which builds the sdist/wheel and uploads to
-   [PyPI](https://pypi.org/project/psyexp-core/) via Trusted Publishing. Its PyPI
-   step runs in the `pypi` environment and **waits for reviewer approval** — approve
-   it from the workflow run to ship, or reject to abort.
+7. The same [release workflow](../.github/workflows/release.yml) then builds the
+   sdist/wheel and uploads to [PyPI](https://pypi.org/project/psyexp-core/) via
+   Trusted Publishing. Its PyPI step runs in the `pypi` environment and **waits for
+   reviewer approval** — approve it from the workflow run to ship, or reject to abort.
 
-> The tag publishes a Release automatically; **the PyPI upload still gates on the
-> `pypi` environment approval.** A human approves that step before anything ships.
+> The tag publishes a Release and builds the wheel automatically; **the PyPI upload
+> still gates on the `pypi` environment approval.** A human approves that step before
+> anything ships.
 
 ## Retag / re-release semantics
 

@@ -82,14 +82,14 @@ for the full workflow.
 
 ## Releasing
 
-Tagging and publishing are deliberately separate, so tags stay cheap to iterate on:
+Tagging and the PyPI upload are deliberately separate, so tags stay cheap to iterate on:
 
-1. **Bump + lock + changelog**, then tag `vX.Y.Z`. The tag runs the checks and
-   creates a **draft** GitHub Release — it does **not** publish anything.
-2. **Review the draft** Release and publish it. That triggers
-   [`publish.yml`](.github/workflows/publish.yml), which uploads to
-   [PyPI](https://pypi.org/project/psyexp-core/) via **Trusted Publishing** (OIDC;
-   no API token stored).
+1. **Bump + lock + changelog**, then tag `vX.Y.Z`. The tag runs
+   [`release.yml`](.github/workflows/release.yml): the checks, a published GitHub
+   Release, and a built wheel — but it does **not** upload to PyPI on its own.
+2. The same run pauses on the `pypi` environment for **reviewer approval**. Approve
+   it to upload to [PyPI](https://pypi.org/project/psyexp-core/) via **Trusted
+   Publishing** (OIDC; no API token stored), or reject to abort.
 
 PyPI versions are immutable, so retagging never republishes; bump the version to
 ship new code. See **[docs/releasing.md](docs/releasing.md)** for the full process,
