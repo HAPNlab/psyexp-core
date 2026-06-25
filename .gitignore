@@ -7,4 +7,5 @@ __pycache__/
 build/
 dist/
 .DS_Store
-.idea/
+# IDE — shared config (inspection profiles, code styles) is tracked;
+# user-specific files are excluded by .idea/.gitignore.
