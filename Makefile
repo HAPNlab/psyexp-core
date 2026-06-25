@@ -13,15 +13,24 @@ release:
 	@echo "$(TO)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "invalid version '$(TO)' (expected X.Y.Z, with no leading 'v')"; exit 1; }
 	@test -z "$$(git status --porcelain)" || { echo "working tree is dirty; commit or stash first"; exit 1; }
 	@git rev-parse -q --verify "refs/tags/v$(TO)" >/dev/null && { echo "tag v$(TO) already exists"; exit 1; } || true
+	@if [ "$(TO)" = "$(VERSION)" ]; then \
+		echo "pyproject.toml is already at $(TO); will re-tag the current commit without bumping."; \
+	fi
 	@if [ -z "$(YES)" ]; then \
-		printf "release v$(TO) (current: v$(VERSION))? [y/N] "; \
+		if [ "$(TO)" = "$(VERSION)" ]; then \
+			printf "re-tag v$(TO) on the current commit (no version bump)? [y/N] "; \
+		else \
+			printf "release v$(TO) (current: v$(VERSION))? [y/N] "; \
+		fi; \
 		read ans; \
 		case "$$ans" in [yY]|[yY][eE][sS]) ;; *) echo "aborted"; exit 1;; esac; \
 	fi
-	sed -i '' 's/^version = ".*"/version = "$(TO)"/' pyproject.toml
-	uv lock
-	git add pyproject.toml uv.lock
-	git commit -m "chore: release v$(TO)"
+	@if [ "$(TO)" != "$(VERSION)" ]; then \
+		sed -i '' 's/^version = ".*"/version = "$(TO)"/' pyproject.toml; \
+		uv lock; \
+		git add pyproject.toml uv.lock; \
+		git commit -m "chore: release v$(TO)"; \
+	fi
 	git tag -a "v$(TO)" -m "v$(TO)"
 	@echo "tagged v$(TO) — run 'git push --follow-tags' to publish"
 
