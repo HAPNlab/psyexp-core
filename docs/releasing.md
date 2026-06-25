@@ -78,22 +78,24 @@ For throwaway iteration you can instead publish PyPI pre-release versions
    git push origin v0.6.0
    ```
    The [release workflow](../.github/workflows/release.yml) runs the tests, checks
-   the version/changelog/lock agree, and creates a **draft** GitHub Release with
+   the version/changelog/lock agree, and **publishes** a GitHub Release with
    notes from `CHANGELOG.md` (marked pre-release for `-alpha`/`-beta`/`-rc` tags).
-7. **Review the draft** Release on GitHub and click **Publish**.
-8. Publishing the Release triggers [publish.yml](../.github/workflows/publish.yml),
+7. Publishing the Release triggers [publish.yml](../.github/workflows/publish.yml),
    which builds the sdist/wheel and uploads to
-   [PyPI](https://pypi.org/project/psyexp-core/) via Trusted Publishing.
+   [PyPI](https://pypi.org/project/psyexp-core/) via Trusted Publishing. Its PyPI
+   step runs in the `pypi` environment and **waits for reviewer approval** — approve
+   it from the workflow run to ship, or reject to abort.
 
-> Tagging only validates and drafts; **publishing the Release is the step that ships
-> to PyPI.** A human reviews the draft first.
+> The tag publishes a Release automatically; **the PyPI upload still gates on the
+> `pypi` environment approval.** A human approves that step before anything ships.
 
 ## Retag / re-release semantics
 
-Because publishing is tied to the **Release**, not the tag, tags stay cheap:
+Because the PyPI upload gates on the `pypi` environment approval, not on the tag or
+Release existing, tags stay cheap:
 
-- **Moving or deleting a tag** before you publish its Release: fine — nothing was
-  sent to PyPI. (The draft Release, if created, can be deleted too.)
+- **Moving or deleting a tag** before approving the PyPI step: fine — nothing was
+  sent to PyPI. (Delete the auto-published Release too, e.g. `make delete-tag`.)
 - **PyPI versions are immutable:** once `X.Y.Z` is uploaded, that number is burned —
   you can *yank* it but never re-upload it, even to a different commit. Re-publishing
   the same version is rejected; `skip-existing: true` makes the publish job skip

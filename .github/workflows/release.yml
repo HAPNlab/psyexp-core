@@ -1,9 +1,10 @@
 name: release-check
 
 # On a version tag: run the test matrix, verify the version/changelog/lock all
-# agree, and create a DRAFT GitHub Release with notes from CHANGELOG.md. Tagging
-# does not publish anything — a human reviews and publishes the draft, which then
-# triggers publish.yml (PyPI). See docs/releasing.md.
+# agree, and create a PUBLISHED GitHub Release with notes from CHANGELOG.md.
+# Publishing the Release triggers publish.yml, but that workflow's PyPI step is
+# gated behind the `pypi` environment's required-reviewer approval — so a tag
+# still cannot reach PyPI without one human approval. See docs/releasing.md.
 on:
   push:
     tags:
@@ -69,9 +70,10 @@ jobs:
 
           echo "Version $tag is consistent across pyproject.toml, uv.lock, and CHANGELOG.md."
 
-  # After the gates pass, draft a GitHub Release with notes from CHANGELOG.md.
-  # The draft is NOT published, so nothing reaches PyPI until a human publishes it.
-  draft-release:
+  # After the gates pass, publish a GitHub Release with notes from CHANGELOG.md.
+  # This triggers publish.yml, whose PyPI step still waits on the `pypi`
+  # environment's required-reviewer approval before anything reaches PyPI.
+  publish-release:
     needs: [tests, version-check]
     runs-on: ubuntu-latest
     permissions:
@@ -102,11 +104,11 @@ jobs:
 
           echo "file=$notes_file" >> "$GITHUB_OUTPUT"
 
-      - name: Create draft GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           name: ${{ github.ref_name }}
           body_path: ${{ steps.notes.outputs.file }}
-          draft: true
+          draft: false
           # Mark as prerelease when the tag carries an rc/alpha/beta suffix.
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
