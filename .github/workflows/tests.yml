@@ -27,12 +27,14 @@ jobs:
 
       # The tested surface (manifest, recording, diagnostics, rundir) is
       # PsychoPy-free, so we skip the heavy GL/PsychoPy stack and install the
-      # project without its runtime deps plus the dev tooling only.
+      # project without its runtime deps plus the dev tooling only. pydantic is
+      # the one runtime dep this surface imports at module load (manifest_models),
+      # so it's installed explicitly here rather than via the full dep tree.
       - name: Install
         run: |
           uv venv --python ${{ matrix.python-version }}
           uv pip install --no-deps -e .
-          uv pip install pytest ruff
+          uv pip install pytest ruff pydantic
 
       # Use --no-sync so `uv run` does not re-resolve and install the full
       # dependency tree (which includes PsychoPy/wxPython and fails to build on
