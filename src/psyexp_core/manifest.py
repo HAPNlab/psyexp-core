@@ -125,16 +125,22 @@ def write_manifest(
     if extra_process:
         process.update(extra_process)
 
-    manifest = Manifest(
-        psyexp_core_version=__version__,
-        session_time=session_time.isoformat(timespec="seconds"),
-        frame_rate_hz=round(frame_rate, 3) if frame_rate is not None else None,
-        n_trials=n_trials,
-        study_params=study_params,
-        system=SystemInfo(**system_info()),
-        display=display,
-        process=process,
-        **header,
+    # ``header`` carries arbitrary task fields, so build the data as a dict and
+    # validate it: ``model_validate`` takes a single mapping, which keeps the
+    # extra keys (``extra="allow"``) without tripping the type checker the way
+    # ``Manifest(**header)`` would.
+    manifest = Manifest.model_validate(
+        {
+            "psyexp_core_version": __version__,
+            "session_time": session_time.isoformat(timespec="seconds"),
+            "frame_rate_hz": round(frame_rate, 3) if frame_rate is not None else None,
+            "n_trials": n_trials,
+            "study_params": study_params,
+            "system": SystemInfo(**system_info()),
+            "display": display,
+            "process": process,
+            **header,
+        }
     )
 
     # Pydantic appends extra (header) fields last; the previous hand-rolled dict
