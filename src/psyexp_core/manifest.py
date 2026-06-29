@@ -83,7 +83,7 @@ def write_manifest(
     run_dir: Path,
     *,
     header: dict[str, Any],
-    session_time: datetime,
+    session_started_at: datetime,
     screen_diag: ScreenDiagnostics | None = None,
     win_res: list[int] | None = None,
     study_params: dict[str, Any] | None = None,
@@ -132,7 +132,7 @@ def write_manifest(
     manifest = Manifest.model_validate(
         {
             "psyexp_core_version": __version__,
-            "session_time": session_time.isoformat(timespec="seconds"),
+            "session_started_at": session_started_at.isoformat(timespec="seconds"),
             "frame_rate_hz": round(frame_rate, 3) if frame_rate is not None else None,
             "n_trials": n_trials,
             "study_params": study_params,

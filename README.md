@@ -14,7 +14,7 @@ logic, and record schemas.
 | --- | --- |
 | `screen` | `setup_screen()` — open a fullscreen PsychoPy window, enable VSYNC, run a frame-timing calibration, and return a `ScreenDiagnostics`. |
 | `diagnostics` | The `ScreenDiagnostics` dataclass (import-light; no PsychoPy). |
-| `rundir` | `make_run_dir(data_dir, label, session_time)` — timestamped output directory. |
+| `rundir` | `make_run_dir(data_dir, label, session_started_at)` — timestamped output directory. |
 | `manifest` | `write_manifest(...)` + `system_info()` — JSON run manifest with system/display/process diagnostics and the resolved `psyexp_core_version`. App-specific fields are injected via `header` / `study_params`. |
 | `recording` | `CsvWriter` base class (maps a dataclass record onto a fixed column schema). |
 | `wizard` | questionary / prompt_toolkit setup-wizard primitives: shared styles, `ask_text` / `ask_select` / `ask_confirm`, `PosFloatValidator`, `prompt_unique_name`, `quit_app`. |

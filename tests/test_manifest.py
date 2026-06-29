@@ -37,7 +37,7 @@ def test_write_manifest_full(tmp_path: Path):
     out = write_manifest(
         tmp_path,
         header={"medoc_version": "0.1.0", "subject_id": "S1", "run_file": "example.toml"},
-        session_time=datetime(2026, 6, 9, 14, 30, 0),
+        session_started_at=datetime(2026, 6, 9, 14, 30, 0),
         screen_diag=_FakeScreenDiag(),
         win_res=[1920, 1080],
         study_params={"baseline": 35.0, "target_temp": 47.0},
@@ -60,7 +60,7 @@ def test_write_manifest_full(tmp_path: Path):
     assert m["run_file"] == "example.toml"
 
     # session / study fields
-    assert m["session_time"] == "2026-06-09T14:30:00"
+    assert m["session_started_at"] == "2026-06-09T14:30:00"
     assert m["frame_rate_hz"] == 60.0
     assert m["n_trials"] == 6
     assert m["study_params"]["target_temp"] == 47.0
@@ -77,7 +77,7 @@ def test_write_manifest_minimal_omits_optional_blocks(tmp_path: Path):
     out = write_manifest(
         tmp_path,
         header={"subject_id": "S1"},
-        session_time=datetime(2026, 6, 9, 14, 30, 0),
+        session_started_at=datetime(2026, 6, 9, 14, 30, 0),
     )
     m = json.loads(out.read_text())
     assert m["subject_id"] == "S1"

@@ -62,7 +62,7 @@ class Manifest(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     psyexp_core_version: str
-    session_time: str
+    session_started_at: str
     frame_rate_hz: float | None = None
     n_trials: int | None = None
     study_params: dict[str, Any] | None = None
