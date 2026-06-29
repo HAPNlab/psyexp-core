@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 See [docs/releasing.md](docs/releasing.md) for the release process.
 
+## v0.8.0
+
+### Changed
+
+- **Breaking (manifest schema):** the manifest's `session_time` field is renamed
+  to `session_started_at`, to make clear it records when the session began (before
+  instructions and the first trial), not the task run proper. The `write_manifest`
+  keyword argument and `make_run_dir`'s parameter are renamed to match. Consumers
+  reading `manifest["session_time"]` must update; manifests written by earlier
+  versions still use the old key.
+
 ## v0.7.0
 
 ### Changed
