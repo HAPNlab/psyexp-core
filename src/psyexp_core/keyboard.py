@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -103,6 +104,60 @@ def get_keys(kb: Keyboard | None, key_list: list[str]) -> list[str]:
     from psychopy import event
 
     return [str(key_name) for key_name in event.getKeys(keyList=key_list)]
+
+
+# ── Prompt helpers (wait / quit) ──────────────────────────────────────────────
+#
+# Small wrappers over the name-reads above that bake in the two things every task
+# prompt needs: a blocking wait that returns the pressed key, and uniform
+# escape-to-quit. The quit keys are passed in (the core doesn't own a task's
+# keymap); the quit *action* defaults to psychopy.core.quit but is injectable for
+# tests and non-standard teardown.
+
+
+def _quit() -> None:
+    """Default quit action: end the PsychoPy session."""
+    from psychopy import core
+
+    core.quit()
+
+
+def check_quit(
+    kb: Keyboard | None,
+    quit_keys: Sequence[str],
+    *,
+    on_quit: Callable[[], None] = _quit,
+) -> None:
+    """Run *on_quit* (default ``psychopy.core.quit``) if a quit key is buffered.
+
+    Non-blocking: reads the current buffer and returns immediately when no quit
+    key is present, so it can be polled once per frame inside a render loop.
+    """
+    if get_keys(kb, list(quit_keys)):
+        on_quit()
+
+
+def wait_for_key(
+    kb: Keyboard | None,
+    key_list: Sequence[str],
+    *,
+    quit_keys: Sequence[str] = (),
+    clear_first: bool = True,
+    on_quit: Callable[[], None] = _quit,
+) -> str:
+    """Block until a key in *key_list* (or *quit_keys*) is pressed; return its name.
+
+    If a *quit_keys* key is pressed, *on_quit* (default ``psychopy.core.quit``) is
+    called before its name is returned — so escape-to-quit works at every prompt
+    without each caller reimplementing it. With *clear_first* (default), presses
+    buffered before the wait are dropped so a held key can't satisfy it instantly.
+    """
+    if clear_first:
+        clear_events(kb)
+    name = wait_for_keys(kb, [*key_list, *quit_keys])[0]
+    if quit_keys and name in quit_keys:
+        on_quit()
+    return name
 
 
 # ── Timed presses + keyboard-clock helpers (PTB timing) ───────────────────────
