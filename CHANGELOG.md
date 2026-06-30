@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 See [docs/releasing.md](docs/releasing.md) for the release process.
 
+## v0.9.0
+
+### Added
+
+- `keyboard.wait_for_key(kb, key_list, *, quit_keys=(), clear_first=True, on_quit=…)`
+  and `keyboard.check_quit(kb, quit_keys, *, on_quit=…)`: shared prompt helpers
+  that wrap the name-reads with a blocking key wait and uniform escape-to-quit.
+  Tasks pass their own quit keys; the quit action defaults to `psychopy.core.quit`
+  and is injectable for tests. Replaces the equivalent helpers previously
+  hand-rolled in each task (heat-task's `task/phases.py`, mid-task's
+  `mid_det/keyboard.py`).
+
 ## v0.8.0
 
 ### Changed

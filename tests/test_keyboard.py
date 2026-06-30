@@ -5,12 +5,15 @@ keyboard / window that mimics PsychoPy's getKeys / callOnFlip / clock surface.
 """
 from __future__ import annotations
 
+import psyexp_core.keyboard as kbd
 from psyexp_core.keyboard import (
     KeyPress,
+    check_quit,
     clock_time,
     get_presses,
     reset_clock,
     reset_clock_on_flip,
+    wait_for_key,
 )
 
 
@@ -98,3 +101,73 @@ def test_reset_clock_on_flip_fires_on_next_flip():
     assert clock_time(kb) == 3.0
     win.flip()
     assert clock_time(kb) == 0.0
+
+
+# ── wait_for_key / check_quit ─────────────────────────────────────────────────
+#
+# These wrap the backend-switching wait_for_keys / get_keys / clear_events, so we
+# monkeypatch those module-level names to drive the quit/return logic without a
+# real PsychoPy backend.
+
+
+def test_wait_for_key_returns_pressed_name(monkeypatch):
+    monkeypatch.setattr(kbd, "clear_events", lambda kb: None)
+    monkeypatch.setattr(kbd, "wait_for_keys", lambda kb, keys: ["1"])
+    assert wait_for_key(None, ["1", "2"]) == "1"
+
+
+def test_wait_for_key_appends_quit_keys_to_the_wait(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(kbd, "clear_events", lambda kb: None)
+
+    def fake_wait(kb, keys):
+        seen["keys"] = keys
+        return ["1"]
+
+    monkeypatch.setattr(kbd, "wait_for_keys", fake_wait)
+    wait_for_key(None, ["1"], quit_keys=["escape"])
+    assert seen["keys"] == ["1", "escape"]
+
+
+def test_wait_for_key_runs_on_quit_for_quit_key(monkeypatch):
+    monkeypatch.setattr(kbd, "clear_events", lambda kb: None)
+    monkeypatch.setattr(kbd, "wait_for_keys", lambda kb, keys: ["escape"])
+    quit_calls: list[bool] = []
+    name = wait_for_key(
+        None, ["1"], quit_keys=["escape"], on_quit=lambda: quit_calls.append(True)
+    )
+    assert name == "escape"
+    assert quit_calls == [True]
+
+
+def test_wait_for_key_does_not_quit_on_normal_key(monkeypatch):
+    monkeypatch.setattr(kbd, "clear_events", lambda kb: None)
+    monkeypatch.setattr(kbd, "wait_for_keys", lambda kb, keys: ["1"])
+    quit_calls: list[bool] = []
+    wait_for_key(None, ["1"], quit_keys=["escape"], on_quit=lambda: quit_calls.append(True))
+    assert quit_calls == []
+
+
+def test_wait_for_key_clear_first_toggles_clear_events(monkeypatch):
+    cleared: list[bool] = []
+    monkeypatch.setattr(kbd, "clear_events", lambda kb: cleared.append(True))
+    monkeypatch.setattr(kbd, "wait_for_keys", lambda kb, keys: ["1"])
+    wait_for_key(None, ["1"])
+    assert cleared == [True]
+    cleared.clear()
+    wait_for_key(None, ["1"], clear_first=False)
+    assert cleared == []
+
+
+def test_check_quit_runs_on_quit_when_quit_key_buffered(monkeypatch):
+    monkeypatch.setattr(kbd, "get_keys", lambda kb, keys: ["escape"])
+    quit_calls: list[bool] = []
+    check_quit(None, ["escape"], on_quit=lambda: quit_calls.append(True))
+    assert quit_calls == [True]
+
+
+def test_check_quit_noop_when_buffer_empty(monkeypatch):
+    monkeypatch.setattr(kbd, "get_keys", lambda kb, keys: [])
+    quit_calls: list[bool] = []
+    check_quit(None, ["escape"], on_quit=lambda: quit_calls.append(True))
+    assert quit_calls == []
